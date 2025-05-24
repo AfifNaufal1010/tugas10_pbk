@@ -1,3 +1,3 @@
 <template>
-  <h1>Daftar Buku</h1>
+  <h1>📖 Daftar Koleksi Buku</h1>
 </template>
