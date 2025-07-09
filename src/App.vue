@@ -3,30 +3,35 @@
     <aside class="sidebar">
       <h2>📚 SIKOLEKSI</h2>
       <nav>
-        <router-link to="/">🏠 Dashboard</router-link>
-
-        <p>Koleksi Buku</p>
-        <router-link to="/koleksi">📖 Daftar Buku</router-link>
-        <router-link to="/koleksi/tambah">➕ Tambah Buku</router-link>
+        <router-link to="/dashboard" exact-active-class="router-link-exact-active">🏠 Dashboard</router-link>
+        <router-link to="/koleksi" exact-active-class="router-link-exact-active">📖 Daftar Buku</router-link>
+        <router-link to="/koleksi/tambah" exact-active-class="router-link-exact-active">➕ Tambah Buku</router-link>
 
         <p>Status Bacaan</p>
-        <router-link to="/status/belum">📕 Belum Dibaca</router-link>
-        <router-link to="/status/sedang">📘 Sedang Dibaca</router-link>
-        <router-link to="/status/selesai">📗 Selesai Dibaca</router-link>
+        <router-link to="/status/sedang" exact-active-class="router-link-exact-active">📘 Sedang Dibaca</router-link>
+        <router-link to="/status/selesai" exact-active-class="router-link-exact-active">📗 Selesai Dibaca</router-link>
 
-        <p>Catatan</p>
-        <router-link to="/catatan">📝 Semua Catatan</router-link>
-        <router-link to="/catatan/tambah">➕ Tambah Catatan</router-link>
-
-        <router-link to="/laporan">📊 Laporan</router-link>
-        <router-link to="/login">🔐 Login</router-link>
+        <p>Akun</p>
+        <router-link to="/login" exact-active-class="router-link-exact-active">🔐 Login</router-link>
+        <router-link to="/user" exact-active-class="router-link-exact-active">👤 Pengguna</router-link>
       </nav>
     </aside>
-    <main class="content">
-      <router-view />
-    </main>
+    <div class="main-area">
+      <Header />
+      <main class="content">
+        <router-view />
+      </main>
+    </div>
   </div>
 </template>
+
+<script setup>
+import Header from './components/Header.vue'
+import { useBooksStore } from '@/stores/books'
+import { onMounted } from 'vue'
+const booksStore = useBooksStore()
+onMounted(() => booksStore.fetchBooks())
+</script>
 
 <style scoped>
 /* Font dan warna dasar */
@@ -41,6 +46,13 @@ body {
   display: flex;
   height: 100vh;
   overflow: hidden;
+}
+.main-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: #fff;
 }
 
 /* Sidebar */
@@ -88,7 +100,7 @@ body {
   padding-left: 15px;
 }
 
-.sidebar a.router-link-active {
+.sidebar a.router-link-exact-active {
   background-color: #1abc9c;
   color: #fff;
 }
