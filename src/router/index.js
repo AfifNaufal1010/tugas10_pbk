@@ -13,16 +13,18 @@ const routes = [
   { path: '/dashboard', name: 'Dashboard', component: Dashboard },
   {
     path: '/koleksi',
+    name: 'Koleksi',
     children: [
-      { path: '', component: BookList },
-      { path: 'tambah', component: BookAdd }
+      { path: '', name: 'BookList', component: BookList },
+      { path: 'tambah', name: 'BookAdd', component: BookAdd }
     ]
   },
   {
     path: '/status',
+    name: 'Status',
     children: [
-      { path: 'sedang', component: StatusReading },
-      { path: 'selesai', component: StatusFinished }
+      { path: 'sedang', name: 'StatusReading', component: StatusReading },
+      { path: 'selesai', name: 'StatusFinished', component: StatusFinished }
     ]
   },
   { path: '/user', name: 'User', component: User },
@@ -37,15 +39,22 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const loggedIn = localStorage.getItem('login') === 'true';
-  if (!loggedIn && to.path !== '/login') {
-    return next('/login');
-  }
+  
+  // Jika user sudah login dan mencoba akses halaman login, redirect ke dashboard
   if (loggedIn && to.path === '/login') {
     return next('/dashboard');
   }
+  
+  // Jika user belum login dan mencoba akses halaman yang memerlukan login
+  if (!loggedIn && to.path !== '/login') {
+    return next('/login');
+  }
+  
+  // Jika user sudah login dan mengakses root path, redirect ke dashboard
   if (loggedIn && to.path === '/') {
     return next('/dashboard');
   }
+  
   next();
 });
 

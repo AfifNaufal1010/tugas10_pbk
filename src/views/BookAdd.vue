@@ -1,6 +1,6 @@
 <template>
   <div class="add-book-form">
-    <h2 class="form-title">Pilih Buku untuk Dibaca</h2>
+    <h2 class="form-title">Tambah Buku ke Daftar Bacaan</h2>
     <div class="form-content">
       <label for="bookSelect" class="form-label">Pilih Buku yang Ingin Dibaca:</label>
       <select 
@@ -10,7 +10,7 @@
         class="book-select"
       >
         <option value="" disabled>Pilih buku...</option>
-        <option v-for="book in availableBooks" :key="book.id" :value="book.id" :disabled="isInUnread(book.id)">
+        <option v-for="book in availableBooks" :key="book.id" :value="book.id" :disabled="isInReading(book.id)">
           {{ book.judul }} — {{ book.penulis }} ({{ book.negara }})
         </option>
       </select>
@@ -19,7 +19,7 @@
         @click="addToUnread"
         class="add-button"
       >
-        Tambahkan ke Daftar Bacaan
+        Tambahkan ke Daftar Sedang Dibaca
       </button>
       <div class="message-container">
         <div v-if="successMsg" class="message success-msg">
@@ -59,13 +59,13 @@ onMounted(async () => {
   }
 })
 
-const isInUnread = (id) => booksStore.koleksiBelumDibaca.includes(id)
+const isInReading = (id) => booksStore.koleksiSedangDibaca.includes(id)
 const availableBooks = computed(() => booksStore.books)
 
 async function addToUnread() {
   if (selectedBookId.value) {
     booksStore.moveToReading(Number(selectedBookId.value))
-    await booksStore.fetchBooks() // Tambahkan baris ini!
+    await booksStore.fetchBooks()
     successMsg.value = 'Buku berhasil ditambahkan ke daftar Sedang Dibaca!'
     selectedBookId.value = ''
     setTimeout(() => { successMsg.value = '' }, 3000)

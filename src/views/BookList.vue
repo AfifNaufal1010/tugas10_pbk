@@ -64,6 +64,8 @@
                 <th class="th-title">Judul</th>
                 <th class="th-genre">Genre</th>
                 <th class="th-author">Penulis</th>
+                <th class="th-status">Status</th>
+                <th class="th-action">Aksi</th>
               </tr>
             </thead>
             <tbody>
@@ -88,6 +90,21 @@
                   <div class="author-info">
                     <span class="author-name">{{ book.penulis }}</span>
                   </div>
+                </td>
+                <td class="td-status">
+                  <span class="status-badge" :class="getStatusClass(book.id)">
+                    {{ getStatusText(book.id) }}
+                  </span>
+                </td>
+                <td class="td-action">
+                  <button 
+                    v-if="isInReading(book.id)" 
+                    @click="moveToFinished(book.id)"
+                    class="action-btn finish-btn"
+                  >
+                    ✅ Selesai
+                  </button>
+                  <span v-else class="status-text">Belum Dibaca</span>
                 </td>
               </tr>
             </tbody>
@@ -132,6 +149,26 @@
     searchJudul.value = ''
     searchGenre.value = ''
     searchPenulis.value = ''
+  }
+
+  // Status functions
+  const isInReading = (id) => booksStore.koleksiSedangDibaca.includes(id)
+  const isInFinished = (id) => booksStore.koleksiSelesaiDibaca.includes(id)
+
+  const getStatusText = (id) => {
+    if (isInFinished(id)) return 'Selesai'
+    if (isInReading(id)) return 'Sedang Dibaca'
+    return 'Belum Dibaca'
+  }
+
+  const getStatusClass = (id) => {
+    if (isInFinished(id)) return 'status-finished'
+    if (isInReading(id)) return 'status-reading'
+    return 'status-unread'
+  }
+
+  const moveToFinished = (bookId) => {
+    booksStore.moveToFinished(bookId)
   }
   </script>
   
@@ -443,5 +480,70 @@
     max-width: 110px;
     min-width: 60px;
     word-break: break-word;
+  }
+  .th-status, .td-status {
+    width: 15%;
+    max-width: 100px;
+    min-width: 80px;
+  }
+  .th-action, .td-action {
+    width: 17%;
+    max-width: 120px;
+    min-width: 100px;
+  }
+
+  /* Status Badge Styles */
+  .status-badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: center;
+    display: inline-block;
+    min-width: 80px;
+  }
+
+  .status-unread {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    color: white;
+  }
+
+  .status-reading {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+  }
+
+  .status-finished {
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+    color: white;
+  }
+
+  /* Action Button Styles */
+  .action-btn {
+    border: none;
+    border-radius: 8px;
+    padding: 0.5rem 0.8rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+  }
+
+  .finish-btn {
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+    color: white;
+  }
+
+  .finish-btn:hover {
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+  }
+
+  .status-text {
+    color: #7f8c8d;
+    font-size: 0.85rem;
+    font-style: italic;
   }
   </style>

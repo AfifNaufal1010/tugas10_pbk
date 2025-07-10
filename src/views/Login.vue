@@ -1,6 +1,8 @@
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const username = ref('')
 const password = ref('')
 const error = ref('')
@@ -10,7 +12,7 @@ const login = () => {
       (username.value === 'user' && password.value === 'user')) {
     localStorage.setItem('login', 'true')
     localStorage.setItem('username', username.value)
-    window.location.href = '/dashboard'
+    router.push('/dashboard')
   } else {
     error.value = 'Username atau password salah!'
   }

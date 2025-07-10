@@ -1,11 +1,9 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
-import { onMounted } from 'vue'
 
 export const useBooksStore = defineStore('books', {
   state: () => ({
     books: [],
-    koleksiBelumDibaca: JSON.parse(localStorage.getItem('koleksiBelumDibaca') || '[]'),
     koleksiSedangDibaca: JSON.parse(localStorage.getItem('koleksiSedangDibaca') || '[]'),
     koleksiSelesaiDibaca: JSON.parse(localStorage.getItem('koleksiSelesaiDibaca') || '[]')
   }),
@@ -18,18 +16,8 @@ export const useBooksStore = defineStore('books', {
       const res = await axios.post('http://localhost:3000/books', { judul, genre, penulis, negara })
       this.books.push(res.data)
     },
-    addToUnread(bookId) {
-      bookId = Number(bookId)
-      if (!this.koleksiBelumDibaca.includes(bookId)) {
-        this.koleksiBelumDibaca.push(bookId)
-      }
-      localStorage.setItem('koleksiBelumDibaca', JSON.stringify(this.koleksiBelumDibaca));
-    },
     moveToReading(bookId) {
       bookId = Number(bookId)
-      // Remove from unread if present
-      this.koleksiBelumDibaca = this.koleksiBelumDibaca.filter(id => id !== bookId)
-      localStorage.setItem('koleksiBelumDibaca', JSON.stringify(this.koleksiBelumDibaca));
       if (!this.koleksiSedangDibaca.includes(bookId)) {
         this.koleksiSedangDibaca.push(bookId)
       }
@@ -46,28 +34,40 @@ export const useBooksStore = defineStore('books', {
       localStorage.setItem('koleksiSelesaiDibaca', JSON.stringify(this.koleksiSelesaiDibaca));
     },
     resetStatus() {
-      this.koleksiBelumDibaca = [];
       this.koleksiSedangDibaca = [];
       this.koleksiSelesaiDibaca = [];
-      localStorage.setItem('koleksiBelumDibaca', '[]');
       localStorage.setItem('koleksiSedangDibaca', '[]');
       localStorage.setItem('koleksiSelesaiDibaca', '[]');
     }
   },
   getters: {
-    unreadBooks(state) {
-      return state.koleksiBelumDibaca
-        .map(id => state.books.find(b => b.id === id))
-        .filter(Boolean)
-    },
     readingBooks(state) {
-      return state.koleksiSedangDibaca
-        .map(id => state.books.find(b => b.id === id))
+      console.log('=== DEBUG GETTER readingBooks ===')
+      console.log('koleksiSedangDibaca:', state.koleksiSedangDibaca)
+      console.log('books length:', state.books.length)
+      
+      if (state.books.length > 0) {
+        console.log('Sample book ID type:', typeof state.books[0].id, 'value:', state.books[0].id)
+        console.log('Sample koleksi ID type:', typeof state.koleksiSedangDibaca[0], 'value:', state.koleksiSedangDibaca[0])
+      }
+      
+      const result = state.koleksiSedangDibaca
+        .map(id => {
+          // Coba match dengan tipe data yang berbeda
+          const book = state.books.find(b => b.id == id || b.id === id || b.id === String(id) || b.id === Number(id))
+          console.log(`Looking for ID ${id} (${typeof id}):`, book ? `Found: ${book.judul}` : 'Not found')
+          return book
+        })
         .filter(Boolean)
+      
+      console.log('Final result:', result)
+      return result
     },
     finishedBooks(state) {
       return state.koleksiSelesaiDibaca
-        .map(id => state.books.find(b => b.id === id))
+        .map(id => {
+          return state.books.find(b => b.id == id || b.id === id || b.id === String(id) || b.id === Number(id))
+        })
         .filter(Boolean)
     }
   }

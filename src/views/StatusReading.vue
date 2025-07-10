@@ -5,7 +5,12 @@
       <p class="subtitle">Buku-buku yang sedang dalam perjalanan</p>
     </div>
     
-    <div v-if="books.length === 0" class="empty-state">
+    <div v-if="loading" class="loading-state">
+      <div class="spinner"></div>
+      <p>Memuat data...</p>
+    </div>
+    
+    <div v-else-if="books.length === 0" class="empty-state">
       <div class="empty-icon">📖</div>
       <h3>Belum ada buku</h3>
       <p>Mulai petualangan membaca Anda!</p>
@@ -53,27 +58,63 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useBooksStore } from '@/stores/books'
 
 const booksStore = useBooksStore()
-const books = computed(() => {
-  const ids = booksStore.koleksiSedangDibaca
-  const allBooks = booksStore.books
-  return ids.map(id => allBooks.find(b => b.id === id)).filter(Boolean)
-})
 
+// Gunakan getter yang sudah ada di store
+const books = computed(() => booksStore.readingBooks)
+const loading = ref(true)
+
+// State untuk popup
 const showPopup = ref(false)
 const selectedBookId = ref(null)
+
+// Fetch books saat component di-mount
+onMounted(async () => {
+  try {
+    // DEBUG: Cek data sebelum fetch
+    console.log('=== DEBUG SEBELUM FETCH ===')
+    console.log('koleksiSedangDibaca dari store:', booksStore.koleksiSedangDibaca)
+    console.log('books dari store:', booksStore.books)
+    console.log('localStorage koleksiSedangDibaca:', JSON.parse(localStorage.getItem('koleksiSedangDibaca') || '[]'))
+    
+    await booksStore.fetchBooks()
+    
+    // DEBUG: Cek data setelah fetch
+    console.log('=== DEBUG SETELAH FETCH ===')
+    console.log('books dari store setelah fetch:', booksStore.books)
+    console.log('Sample book:', booksStore.books[0])
+    
+    // DEBUG: Manual check
+    const manualCheck = booksStore.koleksiSedangDibaca.map(id => {
+      const found = booksStore.books.find(b => b.id == id)
+      console.log(`Manual check - ID ${id}:`, found ? found.judul : 'Not found')
+      return found
+    }).filter(Boolean)
+    console.log('Manual check result:', manualCheck)
+    
+    console.log('readingBooks getter:', booksStore.readingBooks)
+    console.log('computed books:', books.value)
+    
+  } catch (error) {
+    console.error('Error fetching books:', error)
+  } finally {
+    loading.value = false
+  }
+})
 
 function openPopup(bookId) {
   selectedBookId.value = bookId
   showPopup.value = true
 }
+
 function closePopup() {
   showPopup.value = false
   selectedBookId.value = null
 }
+
 function finishReading() {
   if (selectedBookId.value !== null) {
     booksStore.moveToFinished(selectedBookId.value)
@@ -110,6 +151,35 @@ function finishReading() {
   font-size: 1.1rem;
   margin: 8px 0 0 0;
   font-weight: 300;
+}
+
+.loading-state {
+  background: white;
+  border-radius: 20px;
+  padding: 60px 40px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-state p {
+  color: #7f8c8d;
+  font-size: 1rem;
+  margin: 0;
 }
 
 .empty-state {
